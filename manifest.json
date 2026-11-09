@@ -1,0 +1,45 @@
+{
+  "manifest_version": 3,
+  "name": "Vinyltube - YouTube Music Vinyl Player",
+  "version": "1.0.0",
+  "description": "YouTube Music için dönen plak (vinyl) arayüzlü, dinamik renk geçişli kompakt müzik kontrol eklentisi.",
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "declarativeContent",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://music.youtube.com/*",
+    "https://*.googleusercontent.com/*",
+    "https://*.ytimg.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Vinyltube",
+    "default_icon": {
+      "16": "icon.png",
+      "48": "icon.png",
+      "128": "icon.png"
+    }
+  },
+  "icons": {
+    "16": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://music.youtube.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}

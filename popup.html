@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<!-- HTML5 belge tipi tanımlaması -->
+<html lang="tr">
+<head>
+  <!-- Türkçe karakter desteği için UTF-8 karakter kodlaması -->
+  <meta charset="UTF-8" />
+  <!-- Görünüm ölçeklendirme ayarları -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Eklenti penceresi başlığı -->
+  <title>Vinyltube - YouTube Music</title>
+  <!-- Tasarım ve animasyon kurallarını içeren harici CSS dosyası -->
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <!-- Dinamik Arka Plan Katmanı 1: Albüm kapağının bulanıklaştırılmış (blur) hali -->
+  <div id="bg-blur-layer" class="bg-blur-layer"></div>
+
+  <!-- Dinamik Arka Plan Katmanı 2: Albüm renklerinden üretilen yumuşak degrade (gradient) katmanı -->
+  <div id="bg-gradient-layer" class="bg-gradient-layer"></div>
+
+  <!-- Albüm kapağından baskın renkleri analiz etmek için kullanılan gizli Canvas elemanı -->
+  <canvas id="color-canvas" width="32" height="32" hidden></canvas>
+
+  <!-- Ana İçerik Kapsayıcısı -->
+  <div class="app-wrapper">
+    <!-- Üst Başlık Çubuğu: Sol üstte Vinyltube logosu + ismi, sağ üstte durum rozeti -->
+    <header class="top-bar">
+      <!-- Sol Üst: Simge (icon.png) ve Vinyltube marka adı -->
+      <div class="brand">
+        <img src="icon.png" alt="Vinyltube Logo" class="brand-logo" />
+        <span class="brand-name">Vinyltube</span>
+      </div>
+
+      <!-- Sağ Üst: Oynatma durumu rozeti (ÇALIYOR / DURAKLATILDI / BEKLEMEDE) -->
+      <div id="status-badge" class="status-badge">
+        <span id="status-dot" class="status-dot"></span>
+        <span id="status-text" class="status-text">BEKLEMEDE</span>
+      </div>
+    </header>
+
+    <!-- Orta Kısım: Dönen Plak (Vinyl) Görseli -->
+    <section class="vinyl-stage">
+      <!-- Plağın arkasındaki dinamik renkli ambiyans ışığı (glow) -->
+      <div id="vinyl-glow" class="vinyl-glow"></div>
+
+      <!-- Dönen Plak Diski: CSS @keyframes spin ile döner, duraklatıldığında durur -->
+      <div id="vinyl-disc" class="vinyl-disc paused">
+        <!-- Plağın dış siyah oluklu (groove) yüzeyi -->
+        <div class="vinyl-grooves"></div>
+
+        <!-- Plak ortasındaki dairesel maskeli albüm kapağı görseli -->
+        <img
+          id="album-art"
+          class="album-art"
+          src="icon.png"
+          alt="Albüm Kapağı"
+          crossorigin="anonymous"
+        />
+
+        <!-- Plağın en ortasındaki dekoratif halka ve merkez mil deliği (spindle hole) -->
+        <div class="vinyl-center-ring"></div>
+        <div class="vinyl-center-hole"></div>
+      </div>
+
+      <!-- Plak dönerken sabit kalan gerçekçi ışık yansıması (specular reflection) katmanı -->
+      <div class="vinyl-reflection"></div>
+    </section>
+
+    <!-- Şarkı Bilgileri veya Uyarı Mesajı Alanı -->
+    <section class="info-section">
+      <!-- Aktif şarkı adı -->
+      <h1 id="track-title" class="track-title">YouTube Music Bekleniyor</h1>
+      <!-- Aktif sanatçı adı -->
+      <p id="track-artist" class="track-artist">
+        Lütfen YouTube Music'i açın ve bir şarkı oynatın
+      </p>
+
+      <!-- YouTube Music kapalıyken veya şarkı yokken gösterilen şık uyarı/aksiyon kutusu -->
+      <div id="warning-box" class="warning-box">
+        <p id="warning-text" class="warning-text">
+          Lütfen YouTube Music'i açın ve bir şarkı oynatın
+        </p>
+        <button id="btn-open-ytm" class="open-ytm-btn" type="button">
+          YouTube Music'i Aç
+        </button>
+      </div>
+    </section>
+
+    <!-- Alt Kısım: Minimalist Oynatma Kontrol Butonları -->
+    <footer class="controls-bar">
+      <!-- Önceki Şarkı (Skip Back) Butonu -->
+      <button
+        id="btn-prev"
+        class="control-btn"
+        type="button"
+        title="Önceki Şarkı"
+        aria-label="Önceki Şarkı"
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+          <path d="M6 6h2v12H6zm3.5 6 8.5 6V6z" />
+        </svg>
+      </button>
+
+      <!-- Başlat / Durdur (Play / Pause) Ana Butonu -->
+      <button
+        id="btn-play-pause"
+        class="control-btn play-pause-btn"
+        type="button"
+        title="Başlat / Durdur"
+        aria-label="Başlat / Durdur"
+      >
+        <!-- Oynat (Play) İkonu -->
+        <svg
+          id="icon-play"
+          viewBox="0 0 24 24"
+          width="24"
+          height="24"
+          fill="currentColor"
+        >
+          <path d="M8 5v14l11-7z" />
+        </svg>
+        <!-- Duraklat (Pause) İkonu (Varsayılan olarak gizli, müzik çalarken görünür) -->
+        <svg
+          id="icon-pause"
+           class="hidden"
+          viewBox="0 0 24 24"
+          width="24"
+          height="24"
+          fill="currentColor"
+        >
+          <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+        </svg>
+      </button>
+
+      <!-- Sonraki Şarkı (Skip Forward) Butonu -->
+      <button
+        id="btn-next"
+        class="control-btn"
+        type="button"
+        title="Sonraki Şarkı"
+        aria-label="Sonraki Şarkı"
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+          <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
+        </svg>
+      </button>
+    </footer>
+  </div>
+
+  <!-- Popup mantığını, renk analizini ve mesajlaşmayı yöneten JavaScript dosyası -->
+  <script src="popup.js"></script>
+</body>
+</html>
